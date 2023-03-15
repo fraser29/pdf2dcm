@@ -10,6 +10,14 @@ from copy import deepcopy
 from PIL import Image
 
 
+def _ds_add_default_spatial_data(ds):
+    """Minimum spatial information (required by some viewers)
+    """
+    ds.PixelSpacing = [1.0,1.0]
+    ds.ImagePositionPatient = [0.0, 0.0, 0.0]
+    ds.ImageOrientationPatient = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+    ds.SliceThickness = 1.0
+
 class Pdf2RgbSC(BaseConverter):
     def __init__(self, dpi=144, merge_pages=False):
         """Class for the generation RGB Secondary capture
@@ -60,6 +68,7 @@ class Pdf2RgbSC(BaseConverter):
         ds.Columns = img.size[0]
         ds.add_new(0x00280006, "US", 0)
         ds.InstanceNumber = frameID+1
+        _ds_add_default_spatial_data(ds)
 
         ds.PixelData = img.tobytes()
         ds.PixelRepresentation = 0
