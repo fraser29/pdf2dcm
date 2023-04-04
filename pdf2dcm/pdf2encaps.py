@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List
 import os
 from pydicom.dataset import FileMetaDataset, FileDataset
+from pydicom.uid import generate_uid
 
 
 class Pdf2EncapsDCM(BaseConverter):
@@ -40,7 +41,8 @@ class Pdf2EncapsDCM(BaseConverter):
         """
         ds = self._get_dicom_body(file_meta)
         ds.SOPClassUID = uid.ENCAPS_PDF_MEDIA_SOP_CLASS_UID
-
+        seriesUID = generate_uid()
+        ds.SeriesInstanceUID = seriesUID
         # read the pdf byte stream put in the correct dicom loaction
         with open(pdf_file_path, "rb") as f:
             encaps_doc = f.read()
@@ -59,6 +61,7 @@ class Pdf2EncapsDCM(BaseConverter):
         path_pdf: str,
         path_template_dcm: str = "",
         suffix: str = ".dcm",
+        output_path: str = ""
     ) -> List[Path]:
         """Run the complete encapsulation procedure on a given a pdf
 
@@ -85,6 +88,9 @@ class Pdf2EncapsDCM(BaseConverter):
 
         # save the pdfdicom
         name = path_pdf_path.stem
-        path = path_pdf_path.parent
+        if len(output_path) > 0:
+            path = output_path
+        else:
+            path = path_pdf_path.parent
         save_path = Path(os.path.join(path, f"{name}{suffix}"))
         return [self._store_ds(save_path, encapspdf_dcm)]
