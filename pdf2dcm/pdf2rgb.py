@@ -104,7 +104,7 @@ class Pdf2RgbSC(BaseConverter):
         output_prefix: str = 'PDF-',
         output_path: str = None,
         suffix: str = ".dcm",
-        seriesN: int = None,
+        user_defined_tags: dict = None,
     ) -> List[Path]:
         """Run the complete secondary capture creation procedure on a given a pdf
 
@@ -115,7 +115,7 @@ class Pdf2RgbSC(BaseConverter):
             output_prefix (str, optional): prefix of the output dicom files. Defaults to 'PDF-' - so full name: PDF-{pdf_name}-{InstanceNumber:05d}{suffix}.
             output_path (str, optional): path to write the dicom files. Defaults to same directory as path_pdf.
             suffix (str, optional): suffix of the dicom files. Defaults to ".dcm".
-            seriesN (int, optional): pass series number for output
+            user_defined_tags (dict, optional): pass dictionary of STANDARD tags to apply. e.g.: {"SeriesNumber": 99, "SeriesDescription": "Results PDF"}
 
         Returns:
             List[Path]: list of paths of the stored secondary capture dcm
@@ -153,8 +153,9 @@ class Pdf2RgbSC(BaseConverter):
             if personalisation:
                 rgb_sc_dcm = self.personalize_dcm(path_template_dcm_path, rgb_sc_dcm)
             rgb_sc_dcm.SeriesInstanceUID = seriesUID
-            if seriesN is not None:
-                rgb_sc_dcm.SeriesNumber = seriesN
+            if user_defined_tags is not None:
+                for tagName, tagValue in user_defined_tags.items():
+                    setattr(rgb_sc_dcm, tagName, tagValue)
             dicom_pdf_file_paths.append(self._store_ds(store_dcm_path, rgb_sc_dcm))
 
         return dicom_pdf_file_paths
