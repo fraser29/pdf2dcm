@@ -100,7 +100,7 @@ class BaseConverter(ABC):
             [Path]: output storage path for the pdf dicom
         """
         ds.fix_meta_info()
-        ds.save_as(store_path)
+        ds.save_as(store_path, write_like_original=False)
         return store_path
 
     @staticmethod
