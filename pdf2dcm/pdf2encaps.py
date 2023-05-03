@@ -61,7 +61,8 @@ class Pdf2EncapsDCM(BaseConverter):
         path_pdf: str,
         path_template_dcm: str = "",
         suffix: str = ".dcm",
-        output_path: str = ""
+        output_path: str = "",
+        user_defined_tags: dict = None,
     ) -> List[Path]:
         """Run the complete encapsulation procedure on a given a pdf
 
@@ -70,6 +71,7 @@ class Pdf2EncapsDCM(BaseConverter):
             path_template_dcm (str, optional): path to template for getting the
                                                repersonalisation of data.
             suffix (str, optional): suffix of the dicom files. Defaults to ".dcm".
+            user_defined_tags (dict, optional): pass dictionary of STANDARD tags to apply. e.g.: {"SeriesNumber": 99, "SeriesDescription": "Results PDF"}
 
         Returns:
             List[Path]: list path of the stored encapsulated dcm
@@ -81,10 +83,12 @@ class Pdf2EncapsDCM(BaseConverter):
         # encapsulate pdf
         encapspdf_meta = self._get_encapspdf_meta()
         encapspdf_dcm = self.encapsulate_pdf(encapspdf_meta, path_pdf_path)
-        if path_template_dcm_path != Path("") and self.check_valid_dcm(
-            path_template_dcm_path
-        ):
+        if path_template_dcm_path != Path("") and self.check_valid_dcm(path_template_dcm_path):
             encapspdf_dcm = self.personalize_dcm(path_template_dcm_path, encapspdf_dcm)
+        
+        if user_defined_tags is not None:
+            for tagName, tagValue in user_defined_tags.items():
+                setattr(encapspdf_dcm, tagName, tagValue)
 
         # save the pdfdicom
         name = path_pdf_path.stem
